@@ -9,9 +9,16 @@ module.exports = exports = {
     signIn: async (req, res) => {
         const user = await DB.USER.findOne({ email: req.body.email, isActive: true }).populate("roleId", "name").lean();
         if (!user) return response.NOT_FOUND({ res, MESSAGE: MESSAGE.NOT_FOUND });
+        //* If Social user comes with password then send error message
+        if (user.isSocial && req.body.password) return response.BAD_REQUEST({ res, message: "Social login Unauthorized" });
+        //* if user is trying to login with social login
+        if (user.isSocial === false && req.body.isSocial) return response.BAD_REQUEST({ res, message: "Unauthorized" });
 
-        const isPasswordMatch = await common.comparePassword({ password: req.body.password, hash: user.password });
-        if (!isPasswordMatch) return response.BAD_REQUEST({ res, message: MESSAGE.INVALID_PASSWORD });
+
+        if (req.body.password && !req.body.isSocial) {
+            const isPasswordMatch = await common.comparePassword({ password: req.body.password, hash: user.password });
+            if (!isPasswordMatch) return response.BAD_REQUEST({ res, message: MESSAGE.INVALID_PASSWORD });
+        }
 
         const token = await common.generateToken({ data: { _id: user._id, role: user.roleId.name } });
 
@@ -43,6 +50,8 @@ module.exports = exports = {
             { $inc: { count: 1 } },
             { upsert: true }
         )
+        console.log(Date.now());
+
 
         exports.signIn(req, res);
     },

@@ -15,6 +15,7 @@ const userSchema = new Schema(
             ref: "Role",
             required: true,
         },
+        isSocial: { type: Boolean, default: false },
         isActive: {
             type: Boolean,
             default: true,
@@ -25,8 +26,11 @@ const userSchema = new Schema(
 
 userSchema.pre('save', async function (next) {
     try {
-        if (this.isModified('password') || this.isNew)
+        console.log("Thissssss", this, !this.isSocial);
+
+        if (!this.isSocial && (this.isModified('password') || this.isNew)) {
             this.password = await hash(this.password, 10);
+        }
 
         next();
     } catch (error) {

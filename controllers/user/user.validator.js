@@ -10,7 +10,8 @@ module.exports = {
             lastName: Joi.string().required(),
             email: Joi.string().email().required(),
             mobile: Joi.string().required(),
-            password: Joi.string().required(),
+            password: Joi.string().when('isSocial', { is: true, then: Joi.optional(), otherwise: Joi.required() }),
+            isSocial: Joi.boolean(),
             roleId: Joi.string().required()
         }),
     }),
@@ -19,7 +20,8 @@ module.exports = {
     signIn: validator({
         body: Joi.object({
             email: Joi.string().required(),
-            password: Joi.string().required(),
+            password: Joi.string().when('isSocial', { is: true, then: Joi.optional(), otherwise: Joi.required() }),
+            isSocial: Joi.boolean(),
         }),
     }),
 
