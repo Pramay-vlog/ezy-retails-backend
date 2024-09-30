@@ -9,36 +9,38 @@ module.exports = exports = {
     createProduct: async (req, res) => {
 
         const subCategoryExists = await DB.SUBCATEGORY.findOne({ _id: req.body.subCategoryId, isActive: true }).lean();
-        if (!subCategoryExists) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
-
-        req.body.media = [];
-        for (let element in req.files) {
-            if (element === 'images') {
-                req.body.media.push({
-                    color: null,
-                    images: req.files[element].map(file => file.location)
-                })
-            } else {
-                req.body.media.push({
-                    color: element,
-                    images: req.files[element].map(file => file.location),
-                    actualPrice: req.body[element]?.actualPrice,
-                    price: req.body[element]?.price,
-                    discount: req.body.discount || (req.body[element]?.actualPrice - req.body[element]?.price) / req.body[element]?.actualPrice * 100
-                })
-            }
-        }
+        if (!subCategoryExists) return response.NOT_FOUND({ res, message: "Sub Category " + MESSAGE.NOT_FOUND });
+        const categoryExists = await DB.CATEGORY.findOne({ _id: req.body.categoryId, isActive: true }).lean();
+        if (!categoryExists) return response.NOT_FOUND({ res, message: "Category " + MESSAGE.NOT_FOUND });
 
         req.body.categoryId = subCategoryExists.categoryId;
-        req.body.description = {
-            about: req.body.about,
-            material: req.body.material,
-            care: req.body.care,
-        }
         req.body.discount = req.body.discount || (req.body.actualPrice - req.body.price) / req.body.actualPrice * 100;
 
         const product = await DB.PRODUCT.create(req.body);
         await DB.DATA_COUNT.findOneAndUpdate({ module: COUNT_MODULES.PRODUCT }, { $inc: { count: 1 } }, { upsert: true });
+
+        //if variants are there then create subproducts
+        try {
+            if (req.body.variants) {
+                let subProducts = [];
+                for (let variant of req.body.variants) {
+                    let subProduct = {
+                        ...variant,
+                        name: product.name,
+                        productId: product._id,
+                        discount: (variant.discount && variant.discount > 0) ? ((variant.actualPrice - variant.price) / (variant.actualPrice * 100)) : 0
+                    };
+                    subProducts.push(subProduct);
+                }
+                await DB.subProduct.insertMany(subProducts);
+            }
+        } catch (error) {
+            console.log(error);
+            // if we get error in creating subproducts then delete the product
+            await DB.PRODUCT.findByIdAndDelete(product._id);
+            return response.BAD_REQUEST({ res, message: error.message });
+        }
+
         return response.OK({ res, payload: product });
 
     },
@@ -101,12 +103,43 @@ module.exports = exports = {
             }
         }
 
-        const products = await DB.PRODUCT
-            .find(query)
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .sort({ [sortBy]: sortOrder })
-            .lean();
+        const products = await DB.PRODUCT.aggregate([
+            { $match: query },
+            {
+                $lookup: {
+                    from: "SubProduct",
+                    localField: "_id",
+                    foreignField: "productId",
+                    as: "variants"
+                }
+            },
+            {
+                $project: {
+                    name: 1,
+                    description: 1,
+                    media: 1,
+                    actualPrice: 1,
+                    price: 1,
+                    discount: 1,
+                    stock: 1,
+                    state: 1,
+                    categoryId: 1,
+                    subCategoryId: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    variants: {
+                        $filter: {
+                            input: "$variants",
+                            as: "variant",
+                            cond: { $eq: ["$$variant.isActive", true] }
+                        }
+                    }
+                }
+            },
+            { $sort: { [sortBy]: parseInt(sortOrder) } },
+            { $skip: (parseInt(page) - 1) * parseInt(limit) },
+            { $limit: parseInt(limit) }
+        ]);
 
         return response.OK({ res, payload: { count: await DB.PRODUCT.countDocuments(query), data: products } });
 
@@ -117,57 +150,6 @@ module.exports = exports = {
     updateProduct: async (req, res) => {
         let productExists = await DB.PRODUCT.findOne({ _id: req.params._id, isActive: true }).lean();
         if (!productExists) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
-
-        if (Object.keys(req?.files).length) {
-            let media = []
-            for (let element in req.files) {
-                if (element === 'images') {
-                    media.push({
-                        color: null,
-                        images: req.files[element].map(file => file.location)
-                    })
-                } else {
-                    media.push({
-                        color: element,
-                        images: req.files[element].map(file => file.location),
-                        actualPrice: req.body[element]?.actualPrice,
-                        price: req.body[element]?.price,
-                        ...(
-                            req.body[element]?.discount && {
-                                discount: req.body.discount
-                            } ||
-                            req.body[element]?.actualPrice &&
-                            req.body[element]?.price &&
-                            !req.body[element]?.discount && {
-                                discount: (req.body[element]?.actualPrice - req.body[element]?.price) / req.body[element]?.actualPrice * 100
-                            })
-                    })
-                }
-            }
-            req.body.media = media;
-        }
-
-        let colorKey = Object.keys(COLORS).join('|');
-        if (!Object.keys(req?.files).length && Object.keys(req.body).some(key => new RegExp(`^(${colorKey})$`).test(key))) {
-            let media = productExists.media;
-            let colorField = Object.keys(req.body).filter(key => new RegExp(`^(${colorKey})$`).test(key))
-            media = media.map((element, i) => {
-                if (colorField.includes(element.color)) {
-                    let x = req.body[element.color]?.discount || (
-                        (req.body[element.color]?.actualPrice || element.actualPrice) -
-                        (req.body[element.color]?.price || element.price)
-                    ) / (req.body[element.color]?.actualPrice || element.actualPrice) * 100;
-                    element.actualPrice = req.body[element.color]?.actualPrice || element.actualPrice;
-                    element.price = req.body[element.color]?.price || element.price;
-                    element.discount = req.body[element.color]?.discount || (
-                        (req.body[element.color]?.actualPrice || element.actualPrice) -
-                        (req.body[element.color]?.price || element.price)
-                    ) / (req.body[element.color]?.actualPrice || element.actualPrice) * 100;
-                }
-                return element;
-            });
-            req.body.media = media;
-        }
 
         if (req.body.categoryId) {
             if (!req.body.subCategoryId) return response.BAD_REQUEST({ res, message: MESSAGE.NOT_FOUND });
@@ -187,6 +169,42 @@ module.exports = exports = {
         ) / (req.body.actualPrice || productExists.actualPrice) * 100;
 
         await DB.PRODUCT.findByIdAndUpdate(req.params._id, req.body, { new: true });
+
+        //if variants are there then update subproducts
+        try {
+            if (req.body.variants) {
+                let subProducts = [];
+                for (let {subProductOperation,...variant} of req.body.variants) {
+                    if(subProductOperation === 'update'){
+                        if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
+                        let subProduct = {
+                            ...variant,
+                            name: productExists.name,
+                            productId: productExists._id,
+                            discount: (variant.discount && variant.discount > 0) ? ((variant.actualPrice - variant.price) / (variant.actualPrice * 100)) : 0
+                        };
+                        await DB.subProduct.findByIdAndUpdate(variant._id, subProduct, { new: true });   
+                    
+                    }else if(subProductOperation === 'delete'){
+                        if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
+                        await DB.subProduct.findByIdAndDelete(variant._id);
+                    }else if(subProductOperation === 'add'){
+                        let subProduct = {
+                            ...variant,
+                            name: productExists.name,
+                            productId: productExists._id,
+                            discount: (variant.discount && variant.discount > 0) ? ((variant.actualPrice - variant.price) / (variant.actualPrice * 100)) : 0
+                        };
+                        await DB.subProduct.create(subProduct);
+                    }else {
+                        return response.BAD_REQUEST({ res, message: "Invalid Operation" });
+                    }
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            return response.BAD_REQUEST({ res, message: error.message });
+        }
         return response.OK({ res });
 
     },

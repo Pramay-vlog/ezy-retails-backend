@@ -1,50 +1,45 @@
 const Joi = require("joi");
 const validator = require("../../middleware/validator");
 const ObjectId = require('mongoose').Types.ObjectId;
-const { constants: { ENUM: { PRODUCT_STATE, SIZES } } } = require("../../helpers")
+const { constants: { ENUM: { PRODUCT_STATE, SIZES } } } = require("../../helpers");
+const { subProduct } = require("../../models");
 
 module.exports = {
 
     create: validator({
         body: Joi.object({
             name: Joi.string().required(),
-            media: Joi.array().items(Joi.object({
-                color: Joi.string(),
-                discount: Joi.number(),
-            })),
-            sizes: Joi.string()
-                .custom((value, helpers) => {
-                    const sizes = value.split(",");
-                    for (let size of sizes) {
-                        if (!SIZES.includes(size)) return helpers.error("Invalid size");
-                    }
-                    return sizes;
-                })
-                .required(),
-            productTags: Joi.string()
-                .trim()
-                .custom((value, helpers) => {
-                    const tags = value.split(",");
-                    for (let tag of tags) {
-                        if (!tag.match(/^[0-9a-fA-F]{24}$/)) return helpers.error("Invalid tag ID");
-                    }
-                    return tags;
-                }),
+            productTags: Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)),
             features: Joi.string().required(),
-            about: Joi.string().required(),
-            material: Joi.string().required(),
-            care: Joi.string().required(),
+            description: Joi.object({
+                about: Joi.string().required(),
+                material: Joi.string().required(),
+                care: Joi.string().required(),
+            }),
             subCategoryId: Joi.string()
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .message("Invalid ID")
                 .required(),
             stock: Joi.number().required().min(0),
-            actualPrice: Joi.number(),
-            price: Joi.number(),
-            discount: Joi.number(),
-            tax: Joi.number(),
-            shippingCharge: Joi.number(),
-            state: Joi.string().valid(PRODUCT_STATE.IN_STOCK, PRODUCT_STATE.OUT_OF_STOCK)
+            actualPrice: Joi.number().required(),
+            price: Joi.number().required(),
+            discount: Joi.number().default(0),
+            tax: Joi.number().default(0),
+            shippingCharge: Joi.number().default(0),
+            state: Joi.string().valid(PRODUCT_STATE.IN_STOCK, PRODUCT_STATE.OUT_OF_STOCK),
+            variants : Joi.array().items(Joi.object({
+                images: Joi.array().items(Joi.string()).required(),
+                combination: Joi.string().required(),
+                combinationSlug: Joi.string().required(),
+                sku: Joi.string(),
+                stock: Joi.number().required().min(0),
+                actualPrice: Joi.number().required(),
+                price: Joi.number().required(),
+                discount: Joi.number().default(0),
+                tax: Joi.number().default(0),
+                shippingCharge: Joi.number().default(0),
+                state: Joi.string().valid(PRODUCT_STATE.IN_STOCK, PRODUCT_STATE.OUT_OF_STOCK),
+            }))
         })
             .custom((value) => {
                 if (value.stock <= 0) value.state = PRODUCT_STATE.OUT_OF_STOCK;
@@ -66,15 +61,7 @@ module.exports = {
                     }
                     return sizes;
                 }),
-            productTags: Joi.string()
-                .trim()
-                .custom((value, helpers) => {
-                    const tags = value.split(",");
-                    for (let tag of tags) {
-                        if (!tag.match(/^[0-9a-fA-F]{24}$/)) return helpers.error("Invalid tag ID");
-                    }
-                    return tags;
-                }),
+            productTags: Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)),  
             features: Joi.string(),
             about: Joi.string().trim(),
             material: Joi.string().trim(),
@@ -90,7 +77,24 @@ module.exports = {
             price: Joi.number(),
             tax: Joi.number(),
             shippingCharge: Joi.number(),
-            state: Joi.string().valid(PRODUCT_STATE.IN_STOCK, PRODUCT_STATE.OUT_OF_STOCK)
+            state: Joi.string().valid(PRODUCT_STATE.IN_STOCK, PRODUCT_STATE.OUT_OF_STOCK),
+            variants : Joi.array().items(Joi.object({
+                _id: Joi.string()
+                    .pattern(/^[0-9a-fA-F]{24}$/)
+                    .message("Invalid ID"),
+                images: Joi.array().items(Joi.string()).required(),
+                combination: Joi.string().required(),
+                combinationSlug: Joi.string().required(),
+                sku: Joi.string(),
+                stock: Joi.number().min(0),
+                actualPrice: Joi.number(),
+                price: Joi.number(),
+                discount: Joi.number(),
+                tax: Joi.number(),
+                shippingCharge: Joi.number(),
+                state: Joi.string().valid(PRODUCT_STATE.IN_STOCK, PRODUCT_STATE.OUT_OF_STOCK),
+                subProductOperation: Joi.string().valid('add', 'update', 'delete').required()
+            }))
         })
             .custom((value) => {
                 if (value.stock <= 0) value.state = PRODUCT_STATE.OUT_OF_STOCK;

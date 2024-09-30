@@ -13,5 +13,13 @@ module.exports = {
     CART: require("./cart.model"),
     WALLET: require("./wallet.model"),
     LOCATION: require("./location.model"),
+    SHIPPING_ADDRESS: require("./shippingAddress.model"),
+    ORDER: require("./order.model"),
+    ORDER_ITEMS: require("./orderItems.model"),
+    productAttribute: require("./productAttribute.model"),
+    productVariants: require("./productVariants.model"),
+    productVariantCombinations: require("./productVariantCombinations.model"),
+    subProduct: require("./subProduct.model"),
+
 
 };

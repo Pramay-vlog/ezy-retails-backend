@@ -10,7 +10,7 @@ router.post("/", auth({ usersAllowed: [ADMIN] }), VALIDATOR.create, APIS.createS
 
 
 /* Get Apis */
-router.get("/", auth({ usersAllowed: ["*"] }), VALIDATOR.fetch, APIS.getSubcategory);
+router.get("/",  VALIDATOR.fetch, APIS.getSubcategory);
 
 
 /* Put Apis */

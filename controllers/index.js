@@ -43,6 +43,30 @@ module.exports = {
     LOCATION: {
         APIS: require("./location/location.controller"),
         VALIDATOR: require("./location/location.validator"),
-    }
+    },
+    SHIPPING_ADDRESS: {
+        APIS: require("./shippingAddress/shippingAddress.controller"),
+        VALIDATOR: require("./shippingAddress/shippingAddress.validator"),
+    },
+    ORDER: {
+        APIS: require("./order/order.controller"),
+        VALIDATOR: require("./order/order.validator"),
+    },
+    PRODUCT_ATTRIBUTE: {
+        APIS: require("./productAttribute/productAttribute.controller"),
+        VALIDATOR: require("./productAttribute/productAttribute.validator")
+    },
+    PRODUCT_VARIANTS: {
+        APIS: require("./productVariants/productVariants.controller"),
+        VALIDATOR: require("./productVariants/productVariants.validator")
+    },
+    PRODUCT_VARIANT_COMBINATIONS: {
+        APIS: require("./productVariantCombinations/productVariantCombinations.controller"),
+        VALIDATOR: require("./productVariantCombinations/productVariantCombinations.validator")
+    },
+    UPLOADS: {
+        APIS: require("./uploads/uploads.controller"),
+        VALIDATOR: require("./uploads/uploads.validator"),
+    },
 
 };

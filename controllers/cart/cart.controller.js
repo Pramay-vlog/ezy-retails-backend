@@ -9,21 +9,19 @@ module.exports = exports = {
     createCart: async (req, res) => {
 
         const cartExists = await DB.CART.findOne({ userId: req.body.userId || req.user._id, productId: req.body.productId }).lean();
-
-        if (cartExists && req.body?.size === cartExists?.size) {
-            const quantity = cartExists.quantity + req.body.quantity;
-            let x = await DB.CART.findByIdAndUpdate(cartExists._id, { quantity });
-            return response.OK({ res });
-        }
-
+        if (cartExists) return response.BAD_REQUEST({ res, message: MESSAGE.ALREADY_EXISTS });
         const productExists = await DB.PRODUCT.findOne({
             _id: req.body.productId,
-            stock: { $gte: req.body.quantity },
             isActive: true
         }).lean();
         if (!productExists) return response.BAD_REQUEST({ res, message: MESSAGE.NOT_FOUND });
 
-        if (req.body.size && !productExists?.sizes.includes(req.body.size)) return response.BAD_REQUEST({ res, message: "Size not available" });
+        const subProductExists = await DB.subProduct.findOne({
+            _id: req.body.subProductId,
+            isActive: true
+        }).lean();
+        if (!subProductExists) return response.BAD_REQUEST({ res, message: MESSAGE.NOT_FOUND });
+
 
         req.body.userId = req.body.userId || req.user._id;
         await DB.CART.create(req.body);

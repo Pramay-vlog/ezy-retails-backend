@@ -10,12 +10,19 @@ app.use("/user", require("./user.routes"));
 app.use("/heroSection", require("./hero-section.routes"));
 app.use("/category", require("./category.routes"));
 app.use("/subcategory", require("./subcategory.routes"));
-app.use("/product", require("./product.routes"));
 app.use("/productTags", require("./productTags.routes"));
 app.use("/favorite", require("./favorite.routes"));
 app.use("/cart", require("./cart.routes"));
 app.use("/wallet", require("./wallet.routes"));
 app.use("/location", require("./location.routes"));
+app.use("/shippingAddress", require("./shippingAddress.routes"));
+app.use("/order", require("./order.routes"));
+app.use("/product", require("./product.routes"));
+app.use("/product-attribute", require("./productAttribute.routes"));
+app.use("/product-variants", require("./productVariants.routes"));
+app.use("/product-variant-combinations", require("./productVariantCombinations.routes"));
+app.use("/uploads", require("./uploads.routes"));
+
 
 
 module.exports = app;

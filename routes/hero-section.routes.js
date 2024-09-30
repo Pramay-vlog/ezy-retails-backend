@@ -12,7 +12,7 @@ router.post("/", auth({ usersAllowed: [ADMIN] }), uploadImage, VALIDATOR.create,
 
 
 /* Get Apis */
-router.get("/", auth({ usersAllowed: ["*"] }), VALIDATOR.fetch, APIS.getHeroSection);
+router.get("/", VALIDATOR.fetch, APIS.getHeroSection);
 
 
 /* Put Apis */

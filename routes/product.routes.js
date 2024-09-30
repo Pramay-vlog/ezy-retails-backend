@@ -12,7 +12,7 @@ router.post("/", auth({ usersAllowed: [ADMIN] }), uploadImages, VALIDATOR.create
 
 
 /* Get Apis */
-router.get("/", auth({ usersAllowed: ["*"] }), VALIDATOR.fetch, APIS.getProduct);
+router.get("/", VALIDATOR.fetch, APIS.getProduct);
 
 
 /* Patch Apis */

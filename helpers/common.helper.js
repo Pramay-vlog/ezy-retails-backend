@@ -98,6 +98,13 @@ const generateCouponCode = () => {
     return couponCode;
 }
 
+//* check record is exists or not
+const checkItemExists = async (payload, DB) => {
+    const exists = await DB.findOne(payload)
+    return exists ? true : false
+}
+
+
 module.exports = {
     flatten,
     getLocalIP,
@@ -107,5 +114,6 @@ module.exports = {
     decodeToken,
     comparePassword,
     generateOTP,
-    generateCouponCode
+    generateCouponCode,
+    checkItemExists
 };
