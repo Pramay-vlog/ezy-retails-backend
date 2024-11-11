@@ -114,19 +114,51 @@ module.exports = exports = {
                 }
             },
             {
+                $lookup: {
+                    from: "ProductTags",
+                    localField: "productTags",
+                    foreignField: "_id",
+                    as: "productTags"
+                },
+            },
+            {
+                $lookup: {
+                    from: "Category",
+                    localField: "categoryId",
+                    foreignField: "_id",
+                    as: "category"
+                },
+            },
+            {
+                $unwind: "$category"
+            },
+            {
+                $lookup: {
+                    from: "Subcategory",
+                    localField: "subCategoryId",
+                    foreignField: "_id",
+                    as: "subCategory"
+                },
+            },
+            {
+                $unwind: "$subCategory",
+            },
+            {
                 $project: {
                     name: 1,
+                    images: 1,
+                    features: 1,
                     description: 1,
-                    media: 1,
+                    category: 1,
+                    subCategory:1,
+                    productTags: 1,
+                    stock: 1,
                     actualPrice: 1,
                     price: 1,
                     discount: 1,
-                    stock: 1,
                     state: 1,
-                    categoryId: 1,
-                    subCategoryId: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
+                    tax: 1,
+                    shippingCharge: 1,
                     variants: {
                         $filter: {
                             input: "$variants",
@@ -174,8 +206,8 @@ module.exports = exports = {
         try {
             if (req.body.variants) {
                 let subProducts = [];
-                for (let {subProductOperation,...variant} of req.body.variants) {
-                    if(subProductOperation === 'update'){
+                for (let { subProductOperation, ...variant } of req.body.variants) {
+                    if (subProductOperation === 'update') {
                         if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
                         let subProduct = {
                             ...variant,
@@ -183,12 +215,12 @@ module.exports = exports = {
                             productId: productExists._id,
                             discount: (variant.discount && variant.discount > 0) ? ((variant.actualPrice - variant.price) / (variant.actualPrice * 100)) : 0
                         };
-                        await DB.subProduct.findByIdAndUpdate(variant._id, subProduct, { new: true });   
-                    
-                    }else if(subProductOperation === 'delete'){
+                        await DB.subProduct.findByIdAndUpdate(variant._id, subProduct, { new: true });
+
+                    } else if (subProductOperation === 'delete') {
                         if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
                         await DB.subProduct.findByIdAndDelete(variant._id);
-                    }else if(subProductOperation === 'add'){
+                    } else if (subProductOperation === 'add') {
                         let subProduct = {
                             ...variant,
                             name: productExists.name,
@@ -196,7 +228,7 @@ module.exports = exports = {
                             discount: (variant.discount && variant.discount > 0) ? ((variant.actualPrice - variant.price) / (variant.actualPrice * 100)) : 0
                         };
                         await DB.subProduct.create(subProduct);
-                    }else {
+                    } else {
                         return response.BAD_REQUEST({ res, message: "Invalid Operation" });
                     }
                 }

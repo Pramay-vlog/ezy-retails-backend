@@ -21,6 +21,8 @@ module.exports = exports = {
 
         let { page, limit, skip, sortBy, sortOrder, search, ...query } = req.query;
         search ? query.$or = [{ name: { $regex: search, $options: "i" } }] : ""
+        query = req?.user?.roleId?.name !== "admin" ? { ...query, isActive: true } : query;
+        
 
         const heroSections = await DB.HEROSECTION
             .find(query)

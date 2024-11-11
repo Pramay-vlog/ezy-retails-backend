@@ -5,9 +5,9 @@ const jwt = require("jsonwebtoken");
 
 module.exports = {
     auth: ({ isTokenRequired = true, usersAllowed = [] } = {}) => {
-
+        
         return async (req, res, next) => {
-
+            
             const token = req.header("x-auth-token");
             if (isTokenRequired && !token) return response.UNAUTHORIZED({ res, message: MESSAGE.UNAUTHORIZED });
             if (!isTokenRequired && !token) return next();
