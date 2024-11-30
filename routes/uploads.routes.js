@@ -5,6 +5,6 @@ const { UPLOADS: { VALIDATOR, APIS } } = require("../controllers");
 const {  upload} = require("../service/file/file.upload");
 
 /* Post Apis */
-router.post("/", auth({ usersAllowed: ["*"] }), upload.single("file"),  APIS.uploadFiles);
+router.post("/", auth({ usersAllowed: ["*"] }), upload.array("file"),  APIS.uploadFiles);
 
 module.exports = router;
