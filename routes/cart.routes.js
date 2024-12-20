@@ -10,7 +10,7 @@ router.post("/", auth({ usersAllowed: ["*"] }), VALIDATOR.create, APIS.createCar
 
 
 /* Get Apis */
-router.get("/", auth({ usersAllowed: ["*"] }), VALIDATOR.fetch, APIS.getCart);
+router.get("/", VALIDATOR.fetch, APIS.getCart);
 
 
 /* Patch Apis */

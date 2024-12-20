@@ -10,7 +10,7 @@ router.post("/", auth({ usersAllowed: ["*"] }), VALIDATOR.create, APIS.createFav
 
 
 /* Get Apis */
-router.get("/", auth({ usersAllowed: ["*"] }), VALIDATOR.fetch, APIS.getFavorite);
+router.get("/", VALIDATOR.fetch, APIS.getFavorite);
 
 
 module.exports = router;

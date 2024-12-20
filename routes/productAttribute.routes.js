@@ -9,7 +9,7 @@ const { PRODUCT_ATTRIBUTE: { VALIDATOR, APIS } } = require("../controllers");
 router.post("/", auth({ usersAllowed: [ADMIN] }), VALIDATOR.create, APIS.createProductAttribute);
 
 /* Get Apis */
-router.get("/", auth({ usersAllowed: ["*"] }), VALIDATOR.fetch, APIS.getProductAttribute);
+router.get("/", VALIDATOR.fetch, APIS.getProductAttribute);
 
 /* Put Apis */
 router.put("/:_id", auth({ usersAllowed: [ADMIN] }), VALIDATOR.update, APIS.updateProductAttribute);
