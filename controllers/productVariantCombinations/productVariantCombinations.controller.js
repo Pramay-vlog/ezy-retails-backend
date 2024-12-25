@@ -76,7 +76,7 @@ module.exports = exports = {
                 tax: 0,
                 shippingCharge: 0,
                 unit: "",
-                purchaseVariantOperation: "add"
+                subProductOperation: "add"
 
             }
             //* Pushed exists variant combination
