@@ -45,10 +45,6 @@ module.exports = {
 
     generate: validator({
         body: Joi.object({
-            productId: Joi.string()
-                .pattern(/^[0-9a-fA-F]{24}$/)
-                .message("Invalid ID")
-                .required(),
             variantIds: Joi.array().items(Joi.string()
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .message("Invalid ID")

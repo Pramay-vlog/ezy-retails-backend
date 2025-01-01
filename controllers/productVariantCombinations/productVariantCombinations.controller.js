@@ -16,10 +16,10 @@ module.exports = exports = {
         console.log("REQ.body " + req.body)
 
         /* check product is exists or not */
-        let productExists = await DB.PRODUCT.findOne({ _id: productId, isActive: true }).lean();
+        // let productExists = await DB.PRODUCT.findOne({ _id: productId, isActive: true }).lean();
 
-        console.log("Product " + { _id: productId, isActive: true })
-        if (!productExists) return response.NOT_FOUND({ res, message: messages.PRODUCT_NOT_FOUND });
+        // console.log("Product " + { _id: productId, isActive: true })
+        // if (!productExists) return response.NOT_FOUND({ res, message: messages.PRODUCT_NOT_FOUND });
 
         /* Step0: Check if all variantIds are valid */
         let productVariants = await DB.productVariants.find({ _id: { $in: variantIds } }).lean();
@@ -64,8 +64,9 @@ module.exports = exports = {
         for (let combination of productVariantCombinations) {
             let productVariantIds = combination.map((variant) => variant._id);
             let payload = {
-                productId,
+                // productId,
                 productVariantIds,
+                images: [],
                 combination: combination.map((variant) => variant.name).join("-"),
                 combinationSlug: combination.map((variant) => variant.slug).join("-"),
                 sku: "",

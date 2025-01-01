@@ -31,7 +31,7 @@ module.exports = {
                 images: Joi.array().items(Joi.string()).required(),
                 combination: Joi.string().required(),
                 combinationSlug: Joi.string().required(),
-                sku: Joi.string(),
+                sku: Joi.string().allow(""),
                 stock: Joi.number().required().min(0),
                 actualPrice: Joi.number().required(),
                 price: Joi.number().required(),

@@ -10,7 +10,9 @@ module.exports = exports = {
 
         req.body.userId = req.user._id
 
-        const carts = await DB.CART.find({ userId: req.body.userId })
+        const carts = await DB.CART.find({ 
+            $in : req.body.cartIds,
+            userId: req.body.userId })
 
         // order number generation and validation (not exist in db)
         let orderNumber = Math.floor(100000 + Math.random() * 900000);

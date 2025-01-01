@@ -6,6 +6,7 @@ module.exports = {
 
     create: validator({
         body: Joi.object({
+            cartIds: Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)).required(),
             shippingAddressId: Joi.string()
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .message("Invalid ").required(),
