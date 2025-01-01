@@ -208,11 +208,11 @@ module.exports = exports = {
                 for (let { subProductOperation, ...variant } of req.body.variants) {
                     if (subProductOperation === 'update') {
                         if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
-                        if (!(await DB.subProduct.findById(variant._id))) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+                        if (!(await DB.subProduct.findById(variant._id))) return response.NOT_FOUND({ res, message: "Sub Product Id "+ MESSAGE.NOT_FOUND });
 
                     } else if (subProductOperation === 'delete') {
                         if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
-                        if (!(await DB.subProduct.findById(variant._id))) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+                        if (!(await DB.subProduct.findById(variant._id))) return response.NOT_FOUND({ res, message: "Sub Product Id "+ MESSAGE.NOT_FOUND });
                     }
                 }
                 for (let { subProductOperation, ...variant } of req.body.variants) {
