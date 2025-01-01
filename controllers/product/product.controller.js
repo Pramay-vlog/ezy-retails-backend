@@ -150,7 +150,7 @@ module.exports = exports = {
                     features: 1,
                     description: 1,
                     category: 1,
-                    subCategory:1,
+                    subCategory: 1,
                     productTags: 1,
                     stock: 1,
                     actualPrice: 1,
@@ -205,7 +205,16 @@ module.exports = exports = {
         //if variants are there then update subproducts
         try {
             if (req.body.variants) {
-                let subProducts = [];
+                for (let { subProductOperation, ...variant } of req.body.variants) {
+                    if (subProductOperation === 'update') {
+                        if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
+                        if (!(await DB.subProduct.findById(variant._id))) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+
+                    } else if (subProductOperation === 'delete') {
+                        if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
+                        if (!(await DB.subProduct.findById(variant._id))) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+                    }
+                }
                 for (let { subProductOperation, ...variant } of req.body.variants) {
                     if (subProductOperation === 'update') {
                         if (!variant._id) return response.BAD_REQUEST({ res, message: "_id is required" });
