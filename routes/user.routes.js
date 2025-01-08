@@ -13,6 +13,8 @@ router.get("/dashboard", auth({ usersAllowed: [ROLE.ADMIN] }), APIS.dashboardCou
 /* Post Apis */
 router.post("/signup", VALIDATOR.signup, APIS.signUp);
 router.post("/signin", VALIDATOR.signIn, APIS.signIn);
+router.post("/guest/signup", VALIDATOR.guestSignUp, APIS.guestSignUp);
+router.post("/guest/signin", VALIDATOR.guestSignIn, APIS.guestSignIn);
 router.post("/forgot", VALIDATOR.forgot, APIS.forgot);
 router.post("/verifyOtp", VALIDATOR.verifyOtp, APIS.verifyOtp);
 

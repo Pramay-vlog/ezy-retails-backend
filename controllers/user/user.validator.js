@@ -12,7 +12,8 @@ module.exports = {
             mobile: Joi.string().required(),
             password: Joi.string().when('isSocial', { is: true, then: Joi.optional(), otherwise: Joi.required() }),
             isSocial: Joi.boolean(),
-            roleId: Joi.string().required()
+            roleId: Joi.string().required(),
+            guestId: Joi.string(),
         }),
     }),
 
@@ -22,10 +23,21 @@ module.exports = {
             email: Joi.string().required(),
             password: Joi.string().when('isSocial', { is: true, then: Joi.optional(), otherwise: Joi.required() }),
             isSocial: Joi.boolean(),
+            guestId: Joi.string(),
         }),
     }),
 
+    guestSignIn: validator({
+        body: Joi.object({
+            guestId: Joi.string().required(),
+        }),
+    }),
 
+    guestSignUp: validator({
+        body: Joi.object({
+            guestId: Joi.string().required(),
+        }),
+    }),
     forgot: validator({
         body: Joi.object({
             email: Joi.string().required(),

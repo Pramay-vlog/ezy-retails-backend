@@ -16,6 +16,8 @@ const userSchema = new Schema(
             required: true,
         },
         isSocial: { type: Boolean, default: false },
+        isGuest: { type: Boolean, default: false },
+        guestId: { type: String },
         isActive: {
             type: Boolean,
             default: true,
@@ -25,12 +27,23 @@ const userSchema = new Schema(
 );
 
 userSchema.pre('save', async function (next) {
-    try {
-        console.log("Thissssss", this, !this.isSocial);
-
-        if (!this.isSocial && (this.isModified('password') || this.isNew)) {
+    try {        
+        if (Boolean(this.password) && (this.isModified('password') || this.isNew))
             this.password = await hash(this.password, 10);
-        }
+
+        next();
+    } catch (error) {
+        logger.error(`PRE SAVE ERROR: ${error}`);
+        next(error);
+    }
+});
+
+userSchema.pre('findByIdAndUpdate', async function (next) {
+    try {
+        console.log("THIS-----",this);
+        
+        if (Boolean(this.password) && this.isModified('password'))
+            this.password = await hash(this.password, 10);
 
         next();
     } catch (error) {

@@ -1,4 +1,5 @@
 const { constants: { ENUM: { ROLE, COUNT_MODULES }, MESSAGE }, response, logger, common } = require("../../helpers");
+const { checkItemExists } = require("../../helpers/common.helper");
 const DB = require("../../models");
 const EMAIL = require("../../service/mail/mail.service")
 
@@ -15,6 +16,7 @@ module.exports = exports = {
         if (user.isSocial === false && req.body.isSocial) return response.BAD_REQUEST({ res, message: "Unauthorized" });
 
 
+        console.log("🚀 ~ signIn: ~ req.body:", req.body)
         if (req.body.password && !req.body.isSocial) {
             const isPasswordMatch = await common.comparePassword({ password: req.body.password, hash: user.password });
             if (!isPasswordMatch) return response.BAD_REQUEST({ res, message: MESSAGE.INVALID_PASSWORD });
@@ -36,6 +38,7 @@ module.exports = exports = {
 
 
     signUp: async (req, res) => {
+        const { guestId } = req.body;
         if (await DB.USER.findOne({ email: req.body.email })) return response.BAD_REQUEST({ res, message: MESSAGE.DUPLICATE_ENTRY });
 
         const roleExists = await DB.ROLE.findById(req.body.roleId).lean();
@@ -43,17 +46,72 @@ module.exports = exports = {
 
         req.body.roleId = roleExists._id;
 
-        await DB.USER.create(req.body);
+        if (guestId) {
+            const guestExists = await DB.USER.findOne({ guestId })
+            if (!guestExists) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+            newUser = await DB.USER.findByIdAndUpdate(guestExists._id, { ...req.body,password:await common.hashPassword({ password: req.body.password }), isGuest: false })
+        } else {
+            
+             await DB.USER.create(req.body);
+        }
 
         await DB.DATA_COUNT.findOneAndUpdate(
             { module: COUNT_MODULES.USER },
             { $inc: { count: 1 } },
             { upsert: true }
         )
-        console.log(Date.now());
-
 
         exports.signIn(req, res);
+    },
+      // guest signIn
+      guestSignIn: async (req, res) => {
+        const { guestId } = req.body
+
+        const user = await DB.USER.findOne({ guestId, isGuest: true }).populate("roleId", "name").lean();
+
+        if (!user) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+
+        //* check user is active or not
+        if (!user.isActive)
+            return response.BAD_REQUEST({ res, message: MESSAGE.NOT_ACTIVE });
+
+        const token = await common.generateToken({ data: { _id: user._id, role: user.roleId.name } });
+
+        return response.OK({
+            res,
+            message: MESSAGE.SUCCESS,
+            payload: {
+                _id: user._id,
+                guestId: user.guestId,
+                fullName: user.fullName,
+                mobileNo: user.mobileNo,
+                role: user.roleId.name,
+                createdAt: user.createdAt,
+                token,
+            },
+        });
+    },
+
+    // guest signUp
+    guestSignUp: async (req, res) => {
+        let { guestId } = req.body
+
+        const roleExists = await DB.ROLE.findOne({ name: "user" }).lean();
+        if (!roleExists) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
+
+        req.body.roleId = roleExists._id;
+
+        //* check mobile no already exists
+        if (guestId && await checkItemExists({ guestId }, DB.USER)) return response.BAD_REQUEST({ res, message: MESSAGE.ALREADY_EXISTS })
+
+        let userExists = await DB.USER.findOne({ guestId })
+
+        if ((userExists && !userExists.isActive))
+            return response.BAD_REQUEST({ res, message: MESSAGE.USER_DELETED });
+
+        const newUser = await DB.USER.create({ ...req.body, isGuest: true });
+
+        exports.guestSignIn(req, res);
     },
 
 
