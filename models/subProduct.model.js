@@ -4,6 +4,7 @@ const subProductSchema = new Schema(
     {
         productId: { type: Schema.Types.ObjectId, ref: "Product", index: true, required: true },
         name: { type: String },
+        productVariantIds: [{ type: Schema.Types.ObjectId, ref: "ProductVariant" }],
         images: [String],
         combination: { type: String, required: true },
         combinationSlug: { type: String, required: true },
