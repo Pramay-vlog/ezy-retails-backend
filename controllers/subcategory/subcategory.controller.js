@@ -35,6 +35,7 @@ module.exports = exports = {
             .skip((page - 1) * limit)
             .limit(limit)
             .sort({ [sortBy]: sortOrder })
+            .populate("categoryId", "name")
             .lean();
 
         return response.OK({ res, payload: { count: await DB.SUBCATEGORY.countDocuments(query), data: subcategorys } });
