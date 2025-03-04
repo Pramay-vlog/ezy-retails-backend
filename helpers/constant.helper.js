@@ -62,6 +62,7 @@ module.exports = {
         INVALID_FILE_TYPE: 'Invalid file type.',
         MULTER_ERROR: 'Multer error.',
         INVALID_FIELD_NAME: 'Invalid directory name.',
+        PAYMENT_QTY_MISMATCH: 'ProductIds and quantities length mismatch.',
     },
     COLORS: {
         "000000": "Black",

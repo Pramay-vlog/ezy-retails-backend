@@ -68,5 +68,9 @@ module.exports = {
         APIS: require("./uploads/uploads.controller"),
         VALIDATOR: require("./uploads/uploads.validator"),
     },
+    PAYMENT: {
+        APIS: require("./payment/payment.controller"),
+        VALIDATOR: require("./payment/payment.validator"),
+    },
 
 };

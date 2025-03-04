@@ -31,14 +31,18 @@ module.exports = exports = {
             console.log("🚀 ~ createOrder: ~ cart:", cart)
             const product = await DB.PRODUCT.findOne({ _id: cart.productId })
             if (!product) return response.BAD_REQUEST({ res, message: "Product not found" });
+
             if (cart.quantity > product.stock) return response.BAD_REQUEST({ res, message: "Product out of stock" });
+
             let subProduct = null
+
             if (cart.subProductId) {
                 subProduct = await DB.subProduct.findOne({ _id: cart.subProductId })
                 console.log("🚀 ~ createOrder: ~ subProduct:", subProduct)
                 if (!subProduct) return response.BAD_REQUEST({ res, message: "Sub Product not found" });
                 if (cart.quantity > subProduct.stock) return response.BAD_REQUEST({ res, message: "Sub Product out of stock" });
             }
+
             // add order items and order 
             let orderItem = {
                 userId: req.user._id,
@@ -110,7 +114,6 @@ module.exports = exports = {
 
     },
 
-
     /* Get Order API */
     getOrder: async (req, res) => {
 
@@ -172,7 +175,6 @@ module.exports = exports = {
         return response.OK({ res });
 
     },
-
 
     /* Delete Order API*/
     deleteOrder: async (req, res) => {

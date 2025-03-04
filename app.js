@@ -6,6 +6,8 @@ const app = express();
 
 app.use(require('./middleware/request.logger'));
 
+app.use(env.BASE_URL, require('./routes/payment.routes'));
+
 app.use(require('cors')({ origin: '*' }));
 app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
 app.use(express.urlencoded({ extended: false }));

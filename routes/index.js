@@ -22,7 +22,7 @@ app.use("/product-attribute", require("./productAttribute.routes"));
 app.use("/product-variants", require("./productVariants.routes"));
 app.use("/product-variant-combinations", require("./productVariantCombinations.routes"));
 app.use("/uploads", require("./uploads.routes"));
-
+app.use("/payment", require("./payment.routes"));
 
 
 module.exports = app;
