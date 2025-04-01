@@ -1,5 +1,6 @@
 const DB = require("../../models");
 const { constants: { ENUM: { ROLE: { ADMIN } }, MESSAGE }, response } = require("../../helpers");
+const { createOrder } = require("../order/order.controller");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 /* APIS For Payment */
@@ -60,10 +61,13 @@ module.exports = exports = {
             } else {
                 event = req.body;
             }
+console.log("🚀 ~ handleWebhook: ~ event:", event);
 
             switch (event.type) {
                 case "checkout.session.completed":
                     console.log("✅ Payment successful:", event.data.object);
+                    req.body.session = event.data.object;
+                    await createOrder(req, res);
                     break;
             
                 case "checkout.session.async_payment_failed":

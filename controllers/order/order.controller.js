@@ -8,6 +8,8 @@ module.exports = exports = {
     /* Create Order API */
     createOrder: async (req, res) => {
 
+        console.log("🚀 ~ createOrder: ~ req.body:", req.body);
+        
         req.body.userId = req.user._id
 
         const carts = await DB.CART.find({ 
