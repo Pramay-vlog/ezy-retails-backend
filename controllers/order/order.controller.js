@@ -8,9 +8,8 @@ module.exports = exports = {
     /* Create Order API */
     createOrder: async (req, res) => {
 
-        console.log("🚀 ~ createOrder: ~ req.body:", req.body);
         
-        req.body.userId = req.user._id
+        req.body.userId = req.user?._id || req.body.userId;
 
         const carts = await DB.CART.find({ 
             $in : req.body.cartIds,
@@ -30,7 +29,6 @@ module.exports = exports = {
 
         for (let i = 0; i < carts.length; i++) {
             const cart = carts[i];
-            console.log("🚀 ~ createOrder: ~ cart:", cart)
             const product = await DB.PRODUCT.findOne({ _id: cart.productId })
             if (!product) return response.BAD_REQUEST({ res, message: "Product not found" });
 
@@ -40,14 +38,13 @@ module.exports = exports = {
 
             if (cart.subProductId) {
                 subProduct = await DB.subProduct.findOne({ _id: cart.subProductId })
-                console.log("🚀 ~ createOrder: ~ subProduct:", subProduct)
                 if (!subProduct) return response.BAD_REQUEST({ res, message: "Sub Product not found" });
                 if (cart.quantity > subProduct.stock) return response.BAD_REQUEST({ res, message: "Sub Product out of stock" });
             }
 
             // add order items and order 
             let orderItem = {
-                userId: req.user._id,
+                userId: req.user?._id || req.body.userId,
                 orderNumber: orderNumber + "00" + i + 1,
                 productId: cart.productId,
                 subProductId: cart.subProductId,
@@ -110,8 +107,11 @@ module.exports = exports = {
         }
 
         // delete cart
-        await DB.CART.deleteMany({ userId: req.user._id });
+        await DB.CART.deleteMany({ userId: req.user?._id || req.body.userId });
 
+
+        console.log("🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀 ORDER CREATED SUCCESSFULLY 🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀")
+        
         return response.OK({ res, payload: order });
 
     },

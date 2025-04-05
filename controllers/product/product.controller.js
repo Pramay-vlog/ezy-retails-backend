@@ -24,6 +24,7 @@ module.exports = exports = {
             if (req.body.variants) {
                 let subProducts = [];
                 for (let variant of req.body.variants) {
+                    console.log("🚀 ~ createProduct: ~ variant:", variant)
                     let subProduct = {
                         ...variant,
                         name: product.name,

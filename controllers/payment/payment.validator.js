@@ -6,16 +6,15 @@ module.exports = {
 
     create: validator({
         body: Joi.object({
-            productIds: Joi.array().items(
-                Joi.string()
-                    .pattern(/^[0-9a-fA-F]{24}$/)
-                    .message("Invalid ")
-                    .required()
-            ).required(),
-            price_data: Joi.object({
-                currency: Joi.string().required(),
-            }).required(),
-            quantities: Joi.array().items(Joi.number().required()).required(),
+            cartIds: Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)).required(),
+            shippingAddressId: Joi.string()
+                .pattern(/^[0-9a-fA-F]{24}$/)
+                .message("Invalid ").required(),
+            coupenCode: Joi.string(),
+            walletAmount: Joi.number(),
+            shippingCharge: Joi.number(),
+            shippingType: Joi.string(),
+
         }),
     }),
 

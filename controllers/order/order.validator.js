@@ -13,8 +13,6 @@ module.exports = {
             coupenCode: Joi.string(),
             walletAmount: Joi.number(),
             shippingCharge: Joi.number(),
-            paymentId: Joi.string(),
-            paymentPlatform: Joi.string(),
             shippingType: Joi.string(),
         }),
     }),

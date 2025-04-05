@@ -17,7 +17,8 @@ const orderSchema = new Schema(
         subTotal  : {type : Number, default : 0}, // totalAmount + taxAmount - discountAmount - walletAmount + shippingCharge
         paymentId : {type : String},
         paymentPlatform : {type : String},
-        shippingType : {type : String},
+        paymentStatus : {type : String, },
+        shippingType : {type : String}, 
         trackingNo : {type : String},
         trackingUrl : {type : String},
         orderStatus : {type : String, enum : ["Order Confirmed", "In Progress", "Shipped", "Canceled", "Returned"], default: "Order Confirmed"},
