@@ -27,6 +27,7 @@ module.exports = exports = {
         return response.OK({
             res,
             payload: {
+                _id: user._id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -49,10 +50,10 @@ module.exports = exports = {
         if (guestId) {
             const guestExists = await DB.USER.findOne({ guestId })
             if (!guestExists) return response.NOT_FOUND({ res, message: MESSAGE.NOT_FOUND });
-            newUser = await DB.USER.findByIdAndUpdate(guestExists._id, { ...req.body,password:await common.hashPassword({ password: req.body.password }), isGuest: false })
+            newUser = await DB.USER.findByIdAndUpdate(guestExists._id, { ...req.body, password: await common.hashPassword({ password: req.body.password }), isGuest: false })
         } else {
-            
-             await DB.USER.create(req.body);
+
+            await DB.USER.create(req.body);
         }
 
         await DB.DATA_COUNT.findOneAndUpdate(
@@ -63,8 +64,8 @@ module.exports = exports = {
 
         exports.signIn(req, res);
     },
-      // guest signIn
-      guestSignIn: async (req, res) => {
+    // guest signIn
+    guestSignIn: async (req, res) => {
         const { guestId } = req.body
 
         const user = await DB.USER.findOne({ guestId, isGuest: true }).populate("roleId", "name").lean();
@@ -109,7 +110,7 @@ module.exports = exports = {
         if ((userExists && !userExists.isActive))
             return response.BAD_REQUEST({ res, message: MESSAGE.USER_DELETED });
 
-        const newUser = await DB.USER.create({ ...req.body, isGuest: true });
+        await DB.USER.create({ ...req.body, isGuest: true });
 
         exports.guestSignIn(req, res);
     },
